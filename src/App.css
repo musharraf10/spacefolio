@@ -1,0 +1,69 @@
+.launch-screen {
+  background-color: #ffffff; /* Space background [cite: 40] */
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.rocket-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.rocket-gif {
+  width: 96px;
+  height: 96px;
+  /* Animation: Restrained lift-off then fast ascent [cite: 227] */
+  animation: liftOff 5s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.welcome-text {
+  color: rgb(0, 0, 0);
+  font-family: "Inter", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.3rem;
+  margin-top: 20px;
+  /* Appears later  */
+  opacity: 0;
+  animation: textFadeIn 2s ease-out 2.5s forwards;
+}
+
+/* Rocket Launch Animation */
+@keyframes liftOff {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  30% {
+    transform: translateY(-10px);
+  } /* Slight vibration/hover */
+  100% {
+    transform: translateY(-120vh) scale(0.8);
+  } /* Off-screen */
+}
+
+/* Text Fade Animation */
+@keyframes textFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 9:16 Mobile Adjustments [cite: 216] */
+@media (max-width: 480px) {
+  .welcome-text {
+    font-size: 1.2rem;
+    width: 80%;
+    text-align: center;
+    justify-content: center;
+  }
+}

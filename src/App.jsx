@@ -1,0 +1,27 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import Skills from "./pages/Skills";
+import Projects from "./pages/Projects";
+import About from "./pages/About";
+import Connect from "./pages/Connect";
+import GlobalBot from "./bot/GlobalBot";
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/skills" element={<Skills />} />
+        <Route path="/projects" element={<Projects />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/connect" element={<Connect />} />
+      </Routes>
+
+      {/* 🤖 bot is global */}
+      <GlobalBot />
+
+    </BrowserRouter>
+  );
+}
+
+export default App;
