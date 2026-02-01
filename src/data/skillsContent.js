@@ -1,18 +1,106 @@
-export const skillsContent = {
-  title: "Skills",
-  intro: "These are my core skills.",
-  sections: [
+export const skillsData = {
+  coreSkills: [
     {
-      id: "frontend",
-      heading: "Frontend",
-      items: ["React", "Tailwind"],
-      botScript: "My frontend skills include React and Tailwind.",
+      id: "html",
+      name: "HTML",
+      level: "Strong",
+      oneLiner: "Semantic and accessible web structure",
+      source: "Great Learning",
+      supporting: ["CSS"],
+      icon: "html",
     },
     {
-      id: "backend",
-      heading: "Backend",
-      items: ["Node", "MongoDB"],
-      botScript: "On the backend, I work with Node and MongoDB.",
+      id: "css",
+      name: "CSS",
+      level: "Strong",
+      oneLiner: "Responsive layouts and modern UI styling",
+      source: "Great Learning",
+      supporting: ["Tailwind CSS"],
+      icon: "css",
+    },
+    {
+      id: "js",
+      name: "JavaScript",
+      level: "Strong",
+      oneLiner: "Core language for interactive web applications",
+      source: "Apna College",
+      supporting: ["ES6+", "DOM"],
+      icon: "javascript",
+    },
+    {
+      id: "react",
+      name: "React",
+      level: "Strong",
+      oneLiner: "Component-based UI development",
+      source: "Apna College",
+      supporting: ["Hooks", "Framer Motion"],
+      icon: "react",
+    },
+    {
+      id: "node",
+      name: "Node.js",
+      level: "Intermediate",
+      oneLiner: "Backend services and REST APIs",
+      source: "Apna College",
+      supporting: ["Express.js"],
+      icon: "node",
+    },
+    {
+      id: "express",
+      name: "Express.js",
+      level: "Intermediate",
+      oneLiner: "Backend services and REST APIs",
+      source: "Apna College",
+      supporting: ["RestAPIs"],
+      icon: "express",
+    },
+    {
+      id: "java",
+      name: "Java",
+      level: "Intermediate",
+      oneLiner: "Object-oriented programming and problem solving",
+      source: "Apna College",
+      supporting: ["DSA"],
+      icon: "java",
+    },
+    {
+      id: "python",
+      name: "Python",
+      level: "Intermediate",
+      oneLiner: "Scripting and backend fundamentals",
+      source: "PySpiders",
+      supporting: ["Core Python"],
+      icon: "python",
     },
   ],
+
+  supportingSkills: [
+    { id: "mongodb", name: "MongoDB" },
+    { id: "sql", name: "SQL" },
+    { id: "git", name: "Git" },
+    { id: "github", name: "GitHub" },
+    { id: "postman", name: "Postman" },
+    { id: "vscode", name: "VS Code" },
+    { id: "restapis", name: "RESTAPIs" },
+  ],
+
+  currentlyLearning: [
+    {
+      name: "Spring & Spring Boot",
+      progress: 40,
+      source: "Codegnan",
+    },
+  ],
+
+  courses: [
+    { name: "MERN Stack", provider: "Apna College" },
+    { name: "Java with DSA", provider: "Apna College" },
+    { name: "Python & SQL", provider: "PySpiders" },
+    { name: "Basic Cybersecurity", provider: "Supraja Technologies" },
+  ],
+
+  certificates: {
+    label: "View All Certificates",
+    link: "https://drive.google.com/your-certificates-link",
+  },
 };

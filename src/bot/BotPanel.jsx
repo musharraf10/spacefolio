@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { contextCommands } from "./contextCommands";
-import { speak } from "./useBotSpeech";
+import { speak } from "./useSpeech";
 
 export default function BotPanel({ onClose }) {
     const navigate = useNavigate();
