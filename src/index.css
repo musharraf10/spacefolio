@@ -209,6 +209,20 @@
   }
 }
 
+/* Add to your global CSS or inside <style jsx global> */
+@keyframes pulse-slow {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+.animate-pulse-slow {
+  animation: pulse-slow 18s infinite ease-in-out;
+}
+
 @layer utilities {
   .hover\:bg-secondary\/80:hover {
     background-color: rgb(65 90 119 / 0.8);

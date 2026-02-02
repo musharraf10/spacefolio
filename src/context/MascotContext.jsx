@@ -1,0 +1,146 @@
+import React, { createContext, useContext, useRef, useState, useEffect } from "react";
+
+const MascotContext = createContext(null);
+
+export const MascotProvider = ({ children }) => {
+    const utteranceRef = useRef(null);
+
+    // voice system
+    const [voiceEnabled, setVoiceEnabled] = useState(() => {
+        const saved = localStorage.getItem("voiceEnabled");
+        return saved === null ? true : JSON.parse(saved);
+    });
+
+    useEffect(() => {
+        localStorage.setItem("voiceEnabled", JSON.stringify(voiceEnabled));
+    }, [voiceEnabled]);
+
+
+    const [isSpeaking, setIsSpeaking] = useState(false);
+
+    // speech EVENT (this is the key fix)
+    const [speech, setSpeech] = useState(null);
+
+    // planet tracking (UI / movement only)
+    const [activePlanet, setActivePlanet] = useState(null);
+    const [activePlanetPos, setActivePlanetPos] = useState(null);
+    const [guideOpen, setGuideOpen] = useState(false);
+    const spokenPagesRef = useRef(new Set());
+
+
+    const toggleGuide = () => {
+        setGuideOpen((v) => !v);
+    };
+
+    // 🔊 SPEAK FUNCTION (unchanged logic, just centralized)
+    const speak = (text, onStart, onEnd, enabled = voiceEnabled) => {
+        if (!enabled || !window.speechSynthesis || !text) {
+            onEnd?.();
+            return;
+        }
+
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utteranceRef.current = utterance;
+
+        utterance.rate = 0.85;
+        utterance.pitch = 1.0;
+        utterance.volume = 0.75;
+
+        const voices = window.speechSynthesis.getVoices();
+        const preferred =
+            voices.find((v) =>
+                /female|zira|samantha|google uk english female/i.test(v.name)
+            ) ||
+            voices.find((v) => /google|english/i.test(v.name)) ||
+            voices[0];
+
+        if (preferred) utterance.voice = preferred;
+
+        utterance.onstart = () => {
+            setIsSpeaking(true);
+            onStart?.();
+        };
+
+        utterance.onend = () => {
+            setIsSpeaking(false);
+            onEnd?.();
+        };
+
+        utterance.onerror = () => {
+            setIsSpeaking(false);
+            onEnd?.();
+        };
+
+        window.speechSynthesis.speak(utterance);
+    };
+
+    // 🛑 STOP
+    const stop = () => {
+        window.speechSynthesis.cancel();
+        setIsSpeaking(false);
+    };
+
+    // 🎧 TOGGLE VOICE
+    const toggleVoice = () => {
+        setVoiceEnabled((v) => !v);
+        stop();
+    };
+
+    /**
+     * 🔥 SINGLE ENTRY POINT FOR ALL SPEECH
+     * pages, planets, projects, skills, experience, etc.
+     */
+    const requestSpeech = (text, source = "manual") => {
+        if (!text) return;
+
+        // new object every time → guarantees re-trigger
+        setSpeech({
+            text,
+            source,
+        });
+    };
+
+    const requestPageSpeech = (page, text) => {
+        if (spokenPagesRef.current.has(page)) return;
+        spokenPagesRef.current.add(page);
+        requestSpeech(text, "page");
+    };
+
+
+    const requestGuide = (text) => {
+        requestSpeech(text, "guide");
+    };
+
+    return (
+        <MascotContext.Provider
+            value={{
+                // voice
+                voiceEnabled,
+                isSpeaking,
+                toggleVoice,
+                guideOpen,
+                setGuideOpen,
+                toggleGuide,
+                requestPageSpeech,
+                // speech control
+                speech,
+                requestSpeech,
+                speak,
+                requestGuide,
+                stop,
+
+                // planet UI
+                activePlanet,
+                activePlanetPos,
+                setActivePlanet,
+                setActivePlanetPos,
+            }}
+        >
+            {children}
+        </MascotContext.Provider>
+    );
+};
+
+export const useMascot = () => useContext(MascotContext);

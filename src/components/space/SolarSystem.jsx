@@ -1,77 +1,106 @@
-import React, { useRef, useState, useLayoutEffect } from "react";
-import {
-    motion,
-    useMotionValue,
-    useTransform,
-} from "framer-motion";
+import React, { useRef, useState, useEffect } from "react";
+import { motion, useMotionValue, useTransform } from "framer-motion";
 import Planet from "../planet/Planet";
 import { planets, profileData } from "../../data/mockData";
+import { useMascot } from "../../context/MascotContext";
 
 const SolarSystem = ({ onPlanetFocus }) => {
     const containerRef = useRef(null);
     const trackRef = useRef(null);
 
+    const { setActivePlanet, setActivePlanetPos, requestSpeech } = useMascot();
+
     const [isDragging, setIsDragging] = useState(false);
     const [activePlanetId, setActivePlanetId] = useState(null);
     const [bounds, setBounds] = useState({ left: 0, right: 0 });
-    const [activePlanetPos, setActivePlanetPos] = useState(null);
-
 
     const dragX = useMotionValue(0);
 
-    const refocusActivePlanet = () => {
-        if (!activePlanetId) return;
+    // Sun scale effect
+    const sunScale = useTransform(dragX, [-400, 0], [0.85, 1]);
 
-        const el = document.querySelector(
-            `[data-planet-id="${activePlanetId}"]`
-        );
+    // Get accurate planet position relative to container
+    const getPlanetCenterPos = (planetId) => {
+        const planetEl = document.querySelector(`[data-planet-id="${planetId}"]`);
+        if (!planetEl || !containerRef.current) return null;
 
-        if (!el) return;
+        const planetRect = planetEl.getBoundingClientRect();
+        const containerRect = containerRef.current.getBoundingClientRect();
 
-        const rect = el.getBoundingClientRect();
+        // Center of planet relative to container
+        const centerX = planetRect.left + planetRect.width / 2 - containerRect.left;
+        const centerY = planetRect.top + planetRect.height / 2 - containerRect.top;
 
-        onPlanetFocus?.(
-            planets.find(p => p.id === activePlanetId),
-            {
-                x: rect.left + rect.width / 2,
-                y: rect.top + rect.height / 2,
-            }
-        );
+        return { x: centerX, y: centerY };
+    };
+
+    // Focus logic – called on click AND after drag ends
+    const focusPlanet = (planet, position = null) => {
+        setActivePlanetId(planet.id);
+        setActivePlanet(planet.id);
+
+        const pos = position || getPlanetCenterPos(planet.id);
+
+        if (pos) {
+            setActivePlanetPos(pos);
+            onPlanetFocus?.(planet, pos);
+        }
+
+        // 🔊 SPEAK HERE
+        if (planet.script) {
+            requestSpeech(planet.script, "planet");
+        }
     };
 
 
-    /* ---------- SUN SCALE ---------- */
-    const sunScale = useTransform(dragX, [-400, 0], [0.85, 1]);
+    // Handle planet click
+    const handlePlanetClick = ({ id, position }) => {
+        if (isDragging) return;
 
-    /* ---------- CALCULATE DRAG LIMITS ---------- */
-    useLayoutEffect(() => {
-        if (!containerRef.current || !trackRef.current) return;
+        const planet = planets.find((p) => p.id === id);
+        if (!planet) return;
 
-        const containerWidth = containerRef.current.offsetWidth;
-        const trackWidth = trackRef.current.scrollWidth;
+        focusPlanet(planet, position);
+    };
 
-        // Prevent dragging beyond last planet
-        const leftLimit = Math.min(containerWidth - trackWidth, 0);
+    // Auto-refocus active planet after drag ends
+    const refocusActivePlanet = () => {
+        if (!activePlanetId) return;
+        const planet = planets.find((p) => p.id === activePlanetId);
+        if (planet) {
+            focusPlanet(planet);
+        }
+    };
 
-        setBounds({
-            left: leftLimit,
-            right: 0,
+    // Set initial focus to home/sun on mount
+    useEffect(() => {
+        if (!containerRef.current) return;
+
+        const rect = containerRef.current.getBoundingClientRect();
+
+        setActivePlanet("home");
+        setActivePlanetPos({
+            x: rect.width / 2,
+            y: rect.top + 100, // a bit below sun
         });
     }, []);
 
-    /* ---------- PLANET CLICK ---------- */
-    const handlePlanetClick = (planet, pos) => {
-        setActivePlanetId(planet.id);
-        onPlanetFocus?.(planet, pos);
-    };
+    // Optional: Update bounds for drag constraints
+    useEffect(() => {
+        if (!trackRef.current || !containerRef.current) return;
 
+        const trackWidth = trackRef.current.scrollWidth;
+        const containerWidth = containerRef.current.offsetWidth;
 
+        setBounds({
+            left: -(trackWidth - containerWidth + 100), // extra padding
+            right: 100, // allow some overscroll
+        });
+    }, []);
 
     return (
         <div className="relative w-full">
-
-
-            {/* ---------- SOLAR SYSTEM ---------- */}
+            {/* Solar System Container */}
             <div
                 ref={containerRef}
                 className="relative h-[600px] md:h-[700px] overflow-hidden top-2"
@@ -83,14 +112,14 @@ const SolarSystem = ({ onPlanetFocus }) => {
                     dragElastic={0.08}
                     dragTransition={{ bounceStiffness: 300, bounceDamping: 30 }}
                     style={{ x: dragX }}
+                    onDragStart={() => setIsDragging(true)}
                     onDragEnd={() => {
                         setIsDragging(false);
-                        refocusActivePlanet(); // 🔑 AUTO FOLLOW
+                        refocusActivePlanet(); // Re-center mascot after drag
                     }}
-                    onDragStart={() => setIsDragging(true)}
                     className="absolute left-0 top-0 h-full flex items-center gap-32 md:gap-48 px-8 md:px-16 cursor-grab active:cursor-grabbing"
                 >
-                    {/* ---------- SUN ---------- */}
+                    {/* Sun / Profile */}
                     <motion.div
                         style={{ scale: sunScale }}
                         className="relative flex-shrink-0 flex flex-col items-center"
@@ -113,7 +142,7 @@ const SolarSystem = ({ onPlanetFocus }) => {
                         </div>
                     </motion.div>
 
-                    {/* ---------- PLANETS ---------- */}
+                    {/* Planets */}
                     {planets.map((planet, index) => (
                         <Planet
                             key={planet.id}
@@ -121,8 +150,7 @@ const SolarSystem = ({ onPlanetFocus }) => {
                             index={index}
                             isDragging={isDragging}
                             isActive={activePlanetId === planet.id}
-                            onClick={handlePlanetClick}
-
+                            onClick={handlePlanetClick} // Pass event for click position
                         />
                     ))}
                 </motion.div>

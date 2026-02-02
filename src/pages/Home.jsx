@@ -3,7 +3,6 @@ import { motion } from 'framer-motion'
 import StarsBackground from "../components/StarBackground"
 import SolarSystem from '../components/space/SolarSystem'
 import Bot from '../bot/Bot'
-import VoiceToggle from '../bot/VoiceToggle'
 
 const Home = ({ onPlanetFocus }) => {
     const [scrollY, setScrollY] = useState(0)

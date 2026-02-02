@@ -2,10 +2,12 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import SkillTooltip from "./SkillTooltip";
 import { SkillIcon } from "./SkillIcon";
-import SupportingSkill from "./SupportingSkill";
+import SupportingSkill from "./SupportingSkillsWave";
 
 export default function SkillNode({ skill, angle, radius, onHoverChange, isPaused }) {
     const [showTooltip, setShowTooltip] = useState(false);
+
+
 
     // Calculate position correctly
     const angleRad = (angle * Math.PI) / 180;

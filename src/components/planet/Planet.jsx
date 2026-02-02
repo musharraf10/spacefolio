@@ -80,10 +80,14 @@ const Planet = ({ planet, index, isDragging, isActive, onClick }) => {
         if (!isDragging && planetRef.current) {
             const rect = planetRef.current.getBoundingClientRect();
 
-            onClick(planet, {
-                x: rect.left + rect.width / 2,
-                y: rect.top + rect.height / 2,
+            onClick({
+                id: planet.id,
+                position: {
+                    x: rect.left + rect.width / 2,
+                    y: rect.top + rect.height / 2,
+                },
             });
+
         }
     };
 
@@ -92,9 +96,12 @@ const Planet = ({ planet, index, isDragging, isActive, onClick }) => {
         if (isActive && planetRef.current) {
             const rect = planetRef.current.getBoundingClientRect();
 
-            onClick(planet, {
-                x: rect.left + rect.width / 2,
-                y: rect.top + rect.height / 2,
+            onClick({
+                id: planet.id,
+                position: {
+                    x: rect.left + rect.width / 2,
+                    y: rect.top + rect.height / 2,
+                },
             });
         }
     }, [isActive]);
