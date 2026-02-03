@@ -38,9 +38,9 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
         currentPage,
         lastInteractionTime,
         toggleGuide,
+        registerInteraction,
         requestSpeech,
-        clearActivePlanetPos,
-        clearSpeech
+        clearActivePlanetPos
     } = useMascot();
 
     /* ---------------- POSITIONING HANDLER ---------------- */
@@ -124,7 +124,6 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
                 () => setMood("speaking"),
                 () => {
                     setMood("idle");
-                    clearSpeech();
                     // Clear target after speech ends and return to idle position
                     setTimeout(() => {
                         clearActivePlanetPos();
@@ -135,16 +134,15 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
         }, 300);
 
         return () => clearTimeout(t);
-    }, [speech, voiceEnabled, clearActivePlanetPos, clearSpeech]);
+    }, [speech, voiceEnabled, clearActivePlanetPos]);
 
     /* ---------------- VOICE TOGGLE ---------------- */
     useEffect(() => {
         if (!voiceEnabled) {
             window.speechSynthesis.cancel();
             setMood("idle");
-            clearSpeech();
         }
-    }, [voiceEnabled, clearSpeech]);
+    }, [voiceEnabled]);
 
     const normalizeHint = (text) => {
         if (!text) return text;
