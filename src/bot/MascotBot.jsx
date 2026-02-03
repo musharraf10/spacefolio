@@ -17,40 +17,16 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
     const idleTimerRef = useRef(null);
     const recoveryTimerRef = useRef(null);
     const shownHintsRef = useRef(new Set());
+    const [direction, setDirection] = useState('right');
+    const [vertical, setVertical] = useState('bottom');
 
     const getIdlePosition = () => {
-        const padding = 16;
+        const padding = isMobile ? 16 : 24;
         return {
             x: window.innerWidth - padding,
             y: padding,
         };
     };
-
-    useEffect(() => {
-        if (!botRef.current) return;
-
-        const botRect = botRef.current.getBoundingClientRect();
-
-        // 🔁 CASE 1: Something is selected → follow target
-        if (target) {
-            controls.start({
-                left: target.x - botRect.width / 2,
-                top: target.y - botRect.height / 2,
-                transition: { type: "spring", stiffness: 140, damping: 20 },
-            });
-            return;
-        }
-
-        // 🏠 CASE 2: Nothing selected → go idle (top-right)
-        const idle = getIdlePosition();
-
-        controls.start({
-            left: idle.x - botRect.width,
-            top: idle.y,
-            transition: { type: "spring", stiffness: 120, damping: 18 },
-        });
-    }, [target]);
-
 
     const botRef = useRef(null);
     const constraintsRef = useRef(null);
@@ -66,45 +42,71 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
         requestSpeech
     } = useMascot();
 
+    /* ---------------- POSITIONING HANDLER ---------------- */
+    const positionBot = () => {
+        if (!botRef.current) return;
+        const botRect = botRef.current.getBoundingClientRect();
+        const padding = isMobile ? 16 : 24;
+        const minX = padding;
+        const minY = padding;
+        const maxX = window.innerWidth - botRect.width - padding;
+        const maxY = window.innerHeight - botRect.height - padding;
+
+        if (target) {
+            // Follow target with offset and clamping
+            const desiredX = target.x - botRect.width / 2 + 60;
+            const desiredY = target.y - botRect.height / 2 - 60;
+            const clampedX = Math.min(Math.max(desiredX, minX), maxX);
+            const clampedY = Math.min(Math.max(desiredY, minY), maxY);
+            controls.start({
+                left: clampedX,
+                top: clampedY,
+                transition: { type: "spring", stiffness: 140, damping: 20 },
+            });
+        } else {
+            // Go to idle (top-right)
+            const idle = getIdlePosition();
+            controls.start({
+                left: idle.x - botRect.width,
+                top: idle.y,
+                transition: { type: "spring", stiffness: 120, damping: 18 },
+            });
+        }
+    };
+
+    const calculatePositioning = () => {
+        const rect = botRef.current?.getBoundingClientRect();
+        if (!rect) return;
+        const winW = window.innerWidth;
+        const winH = window.innerHeight;
+        const hintWidth = 240; // Approximate average width
+        const hintHeight = 60; // Approximate height
+        const spaceRight = winW - rect.right;
+        const spaceBottom = winH - rect.bottom;
+
+        setDirection(spaceRight < hintWidth ? 'left' : 'right');
+        setVertical(spaceBottom < hintHeight ? 'top' : 'bottom');
+    };
+
+    useEffect(() => {
+        positionBot();
+    }, [target, isMobile]);
+
+    useEffect(() => {
+        if (mood === 'idle' && !target) {
+            positionBot();
+        }
+    }, [mood]);
+
     useEffect(() => {
         const handleResize = () => {
-            if (!target) return;
-            controls.stop();
             setIsMobile(window.matchMedia("(max-width: 767px)").matches);
+            positionBot();
         };
 
         window.addEventListener("resize", handleResize);
         return () => window.removeEventListener("resize", handleResize);
     }, [target]);
-
-
-    /* ---------------- FOLLOW TARGET ---------------- */
-    useEffect(() => {
-        if (!botRef.current) return;
-
-        const botRect = botRef.current.getBoundingClientRect();
-
-        // 🔁 CASE 1: Something is selected → follow target
-        if (target) {
-            controls.start({
-                left: target.x - botRect.width / 2,
-                top: target.y - botRect.height / 2,
-                transition: { type: "spring", stiffness: 140, damping: 20 },
-            });
-            return;
-        }
-
-        // 🏠 CASE 2: Nothing selected → go idle (top-right)
-        const idle = getIdlePosition();
-
-        controls.start({
-            left: idle.x - botRect.width,
-            top: idle.y,
-            transition: { type: "spring", stiffness: 120, damping: 18 },
-        });
-    }, [target]);
-
-
 
     /* ---------------- SPEECH HANDLER ---------------- */
     useEffect(() => {
@@ -119,7 +121,12 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
             speak(
                 speech.text,
                 () => setMood("speaking"),
-                () => setMood("idle"),
+                () => {
+                    setMood("idle");
+                    setTimeout(() => {
+                        positionBot();
+                    }, 2000);
+                },
                 voiceEnabled
             );
         }, 300);
@@ -214,9 +221,6 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
         }
     }, [lastInteractionTime]);
 
-
-
-
     /* ---------------- CLEANUP ---------------- */
     useEffect(() => {
         return () => {
@@ -228,17 +232,14 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
             <motion.div
                 ref={botRef}
                 animate={controls}
-                initial={{ left: 20, top: window.innerHeight - 140 }}
+                initial={{ left: window.innerWidth - 80, top: 16 }} // Approximate initial top-right
                 className="absolute z-50 pointer-events-auto"
-                drag
-                dragConstraints={constraintsRef}
-                dragElastic={0}
-                dragMomentum={false}
+                // Removed drag props to disable user dragging
                 onClick={toggleGuide}
+                onAnimationComplete={calculatePositioning}
             >
                 {/* BODY */}
                 <motion.div
-                    ref={botRef}
                     className="relative w-10 h-10 md:w-14 md:h-14 rounded-full
         bg-gradient-to-br from-secondary to-secondary-light
         shadow-lg flex items-center justify-center cursor-pointer"
@@ -307,11 +308,12 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
                 </motion.div>
                 {hint && (
                     <motion.div
-                        initial={{ opacity: 0, y: 6 }}
+                        initial={{ opacity: 0, y: vertical === 'bottom' ? 6 : -6 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
-                        className="
-      absolute top-full mt-2
+                        className={`
+      absolute ${vertical === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2'}
+      ${direction === 'left' ? 'right-0' : 'left-0'}
       bg-space-dark/80 backdrop-blur-md
       border border-accent/20
       rounded-md px-3 py-2
@@ -323,7 +325,7 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
       whitespace-normal
       leading-relaxed
       shadow-md
-    "
+    `}
                     >
                         {hint}
                     </motion.div>
@@ -334,9 +336,11 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute top-full mt-3 w-56
+                        className={`absolute ${vertical === 'bottom' ? 'top-full mt-3' : 'bottom-full mb-3'} 
+               ${direction === 'left' ? 'right-0' : 'left-0'}
+               w-60
                bg-space-dark/90 backdrop-blur-md
-               border border-accent/30 rounded-lg p-3 space-y-2"
+               border border-accent/30 rounded-xl p-3 space-y-2 shadow-lg`}
                     >
                         {navigationGuide[activePlanet]?.length > 0 ? (
                             navigationGuide[activePlanet]
@@ -350,7 +354,8 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
                                             setGuideOpen(false);
                                         }}
                                         className="w-full text-left text-sm text-accent
-                 hover:bg-accent/10 rounded px-2 py-1"
+                 hover:bg-accent/10 rounded-lg px-3 py-2
+                 border border-transparent hover:border-accent/20 transition"
                                     >
                                         {item.label}
                                     </button>
@@ -362,7 +367,7 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
                                 transition={{ duration: 2, repeat: Infinity }}
                                 className="text-xs text-accent/60 px-2 py-2 italic"
                             >
-                                Double-click on a planet to navigate
+                                Click on a planet to see options
                             </motion.div>
 
                         )}

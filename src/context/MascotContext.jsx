@@ -117,7 +117,9 @@ export const MascotProvider = ({ children }) => {
     // 🛑 STOP
     const stop = () => {
         window.speechSynthesis.cancel();
+
         setIsSpeaking(false);
+        set
     };
 
     // 🎧 TOGGLE VOICE
