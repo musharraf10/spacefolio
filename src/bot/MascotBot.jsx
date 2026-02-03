@@ -71,6 +71,16 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
         });
     }, [target]);
 
+    useEffect(() => {
+        if (target || !constraintsRef.current) return;
+        controls.start({
+            right: 20,
+            top: 20,
+            left: "auto",
+            transition: { type: "spring", stiffness: 140, damping: 20 },
+        });
+    }, [target]);
+
 
 
 
@@ -302,9 +312,9 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0 }}
-                    className="absolute top-full mt-3 w-56
+                    className="absolute top-full mt-3 w-60
                bg-space-dark/90 backdrop-blur-md
-               border border-accent/30 rounded-lg p-3 space-y-2"
+               border border-accent/30 rounded-xl p-3 space-y-2 shadow-lg"
                 >
                     {navigationGuide[activePlanet]?.length > 0 ? (
                         navigationGuide[activePlanet]
@@ -318,7 +328,8 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
                                     setGuideOpen(false);
                                 }}
                                 className="w-full text-left text-sm text-accent
-                 hover:bg-accent/10 rounded px-2 py-1"
+                 hover:bg-accent/10 rounded-lg px-3 py-2
+                 border border-transparent hover:border-accent/20 transition"
                             >
                                 {item.label}
                             </button>
