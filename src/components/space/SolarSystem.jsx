@@ -38,6 +38,7 @@ const SolarSystem = ({ onPlanetFocus }) => {
     const focusPlanet = (planet, position = null) => {
         setActivePlanetId(planet.id);
         setActivePlanet(planet.id);
+        registerInteraction("planet");
 
         const pos = position || getPlanetCenterPos(planet.id);
 

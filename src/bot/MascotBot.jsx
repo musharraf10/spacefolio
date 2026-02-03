@@ -10,7 +10,13 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
     const controls = useAnimation();
     const navigate = useNavigate();
     const [hint, setHint] = useState(null);
+    const [isMobile, setIsMobile] = useState(() =>
+        window.matchMedia("(max-width: 767px)").matches
+    );
     const hintTimerRef = useRef(null);
+    const idleTimerRef = useRef(null);
+    const recoveryTimerRef = useRef(null);
+    const shownHintsRef = useRef(new Set());
 
     const botRef = useRef(null);
     const constraintsRef = useRef(null);
@@ -19,7 +25,10 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
         guideOpen,
         setGuideOpen,
         activePlanet,
+        currentPage,
+        lastInteractionTime,
         toggleGuide,
+        registerInteraction,
         requestSpeech
     } = useMascot();
 
@@ -27,6 +36,7 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
         const handleResize = () => {
             if (!target) return;
             controls.stop();
+            setIsMobile(window.matchMedia("(max-width: 767px)").matches);
         };
 
         window.addEventListener("resize", handleResize);
@@ -93,28 +103,84 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
         }
     }, [voiceEnabled]);
 
+    const normalizeHint = (text) => {
+        if (!text) return text;
+        if (!isMobile) return text;
+        const words = text.split(" ");
+        return words.slice(0, 8).join(" ");
+    };
+
+    const showHint = (text, type, pageKey) => {
+        if (!text || guideOpen) return;
+        const key = `${pageKey || "global"}:${type}`;
+        if (shownHintsRef.current.has(key)) return;
+        const nextHint = normalizeHint(text);
+        setHint(nextHint);
+        shownHintsRef.current.add(key);
+        if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+        hintTimerRef.current = setTimeout(() => setHint(null), 4000);
+    };
+
     useEffect(() => {
-        const key = activePlanet || speech?.source;
-        if (!key) return;
+        if (!currentPage) return;
+        if (guideOpen) return;
+        const entryHints = {
+            home: "Explore the planets to begin.",
+            skills: "Browse skills and learning paths.",
+            projects: "Open a project to learn more.",
+            journey: "Scroll to see journey phases.",
+            experience: "Select a role to hear details.",
+            contact: "Pick a contact method here.",
+        };
+        const pageHint =
+            entryHints[currentPage] || botHints[currentPage]?.[0];
+        const entryDelay = 700;
+        const entryKey = `${currentPage}:entry`;
+        if (shownHintsRef.current.has(entryKey)) return;
+        const timer = setTimeout(() => {
+            showHint(pageHint, "entry", currentPage);
+        }, entryDelay);
+        return () => clearTimeout(timer);
+    }, [currentPage, guideOpen, isMobile]);
 
-        const hints = botHints[key];
-        if (!hints || hints.length === 0) return;
+    useEffect(() => {
+        if (!currentPage) return;
+        if (guideOpen) return;
+        if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+        if (recoveryTimerRef.current) clearTimeout(recoveryTimerRef.current);
 
-        if (hintTimerRef.current) {
-            clearTimeout(hintTimerRef.current);
+        const idleDelay = isMobile ? 9000 : 11000;
+        const recoveryDelay = isMobile ? 16000 : 18000;
+
+        idleTimerRef.current = setTimeout(() => {
+            const idleHint =
+                botHints[currentPage]?.[1] || "Tap a planet to continue.";
+            showHint(idleHint, "idle", currentPage);
+        }, idleDelay);
+
+        recoveryTimerRef.current = setTimeout(() => {
+            const recoveryHint =
+                botHints[currentPage]?.[2] || "Double-tap a planet to navigate.";
+            showHint(recoveryHint, "recovery", currentPage);
+        }, recoveryDelay);
+
+        return () => {
+            if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+            if (recoveryTimerRef.current) clearTimeout(recoveryTimerRef.current);
+        };
+    }, [currentPage, lastInteractionTime, guideOpen, isMobile]);
+
+    useEffect(() => {
+        if (guideOpen) {
+            setHint(null);
         }
+    }, [guideOpen]);
 
-        hintTimerRef.current = setTimeout(() => {
-            const randomHint =
-                hints[Math.floor(Math.random() * hints.length)];
-
-            setHint(randomHint);
-
-            setTimeout(() => setHint(null), 4000);
-        }, 6000);
-
-        return () => clearTimeout(hintTimerRef.current);
-    }, [activePlanet, speech]);
+    useEffect(() => {
+        if (lastInteractionTime) {
+            setHint(null);
+        }
+    }, [lastInteractionTime]);
 
 
 
@@ -125,10 +191,6 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
             window.speechSynthesis.cancel();
         };
     }, []);
-    const clamp = (value, min, max) =>
-        Math.min(Math.max(value, min), max);
-
-
     return (
         <div ref={constraintsRef} className="fixed inset-0 z-50 pointer-events-none">
             <motion.div
@@ -221,6 +283,7 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
       border border-accent/30
       rounded-lg px-4 py-2
       text-xs text-accent/80
+      pointer-events-none
 
       min-w-[220px]
       max-w-[360px]
@@ -243,7 +306,9 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
                border border-accent/30 rounded-lg p-3 space-y-2"
                 >
                     {navigationGuide[activePlanet]?.length > 0 ? (
-                        navigationGuide[activePlanet].map((item) => (
+                        navigationGuide[activePlanet]
+                            .slice(0, isMobile ? 2 : 3)
+                            .map((item) => (
                             <button
                                 key={item.route}
                                 onClick={() => {
