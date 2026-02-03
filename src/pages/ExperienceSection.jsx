@@ -8,7 +8,7 @@ export default function ExperienceSection() {
     const {
         setActivePlanet,
         setActivePlanetPos,
-        requestSpeech,
+        triggerSpeechIntent,
         registerInteraction
     } = useMascot();
 
@@ -22,15 +22,10 @@ export default function ExperienceSection() {
             y: rect.top,
         });
 
-        requestSpeech(
-            "This role helped me build real-world experience.",
-            "action"
-        );
-
-
-        requestSpeech(
+        triggerSpeechIntent(
             exp.botText ||
-            `I worked as a ${exp.role} at ${exp.company}. ${exp.outcome}`, "experience"
+            `I worked as a ${exp.role} at ${exp.company}. ${exp.outcome}`,
+            "experience"
         );
     };
 

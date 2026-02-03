@@ -41,7 +41,7 @@ const AppRoutes = () => {
     const location = useLocation();
     const {
         setActivePlanet,
-        requestPageSpeech,
+        triggerPageGreeting,
         setCurrentPage,
         registerInteraction,
     } = useMascot();
@@ -54,7 +54,7 @@ const AppRoutes = () => {
         setCurrentPage(config.planet);
         registerInteraction("route");
         localStorage.setItem("lastVisitedPage", config.planet);
-        requestPageSpeech(location.pathname, config.text);
+        triggerPageGreeting(location.pathname, config.text);
     }, [location.pathname]);
 
 

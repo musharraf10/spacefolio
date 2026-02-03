@@ -6,7 +6,7 @@ const CoreSkillsWave = ({ skills, onSelect }) => {
     const {
         setActivePlanet,
         setActivePlanetPos,
-        requestSpeech,
+        triggerSpeechIntent,
         registerInteraction
     } = useMascot();
 
@@ -72,15 +72,10 @@ const CoreSkillsWave = ({ skills, onSelect }) => {
             y: rect.top,
         });
 
-        requestSpeech(
-            `${skill.name}. ${skill.summary}`,
-            "action"
-        );
-
-
-        requestSpeech(
+        triggerSpeechIntent(
             skill.botText ||
-            `${skill.name} is one of my core skills. ${skill.summary}`, "skills"
+            `${skill.name} is one of my core skills. ${skill.summary}`,
+            "skills"
         );
     };
 

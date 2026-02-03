@@ -14,7 +14,7 @@ const Projects = () => {
     const {
         setActivePlanet,
         setActivePlanetPos,
-        requestSpeech,
+        triggerSpeechIntent,
         registerInteraction
     } = useMascot();
 
@@ -33,13 +33,10 @@ const Projects = () => {
             y: rect.top,
         });
 
-        requestSpeech(
-            project.botText || "This project demonstrates applied development skills.",
-            "action"
+        triggerSpeechIntent(
+            project.botText || project.tagline || "This project demonstrates applied development skills.",
+            "projects"
         );
-
-
-        requestSpeech(project.botText || project.tagline, "projects");
 
     };
 

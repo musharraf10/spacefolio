@@ -57,7 +57,7 @@ export const MascotProvider = ({ children }) => {
     });
     const [lastInteractionType, setLastInteractionType] = useState(null);
     const [lastInteractionTime, setLastInteractionTime] = useState(0);
-    const lastSpokenTextRef = useRef(null);
+    const intentIdRef = useRef(0);
 
     function registerInteraction(type) {
         const time = Date.now();
@@ -131,35 +131,29 @@ export const MascotProvider = ({ children }) => {
         stop();
     };
 
-    /**
-     * 🔥 SINGLE ENTRY POINT FOR ALL SPEECH
-     * pages, planets, projects, skills, experience, etc.
-     */
-    const requestSpeech = (text, source = "manual") => {
+    const emitSpeech = (text, source = "manual") => {
         if (!text) return;
-        if (lastSpokenTextRef.current === text) return;
-        const allowDuringInteraction = new Set([
-            "action",
-            "planet",
-            "projects",
-            "experience",
-            "skills",
-            "journey",
-            "contact",
-            "navigation",
-        ]).has(source);
-        const isInteracting = Date.now() - lastInteractionTime < 1200;
-        if (!allowDuringInteraction && isInteracting) return;
-
-        // new object every time → guarantees re-trigger
+        intentIdRef.current += 1;
         setSpeech({
+            id: intentIdRef.current,
             text,
             source,
         });
-        lastSpokenTextRef.current = text;
     };
 
-    const requestPageSpeech = (page, text) => {
+    /**
+     * 🔥 INTENT-BASED SPEECH ONLY
+     * Only call this for explicit user actions.
+     */
+    const triggerSpeechIntent = (text, source = "manual") => {
+        emitSpeech(text, source);
+    };
+
+    const clearSpeech = () => {
+        setSpeech(null);
+    };
+
+    const triggerPageGreeting = (page, text) => {
         if (!page || spokenPagesRef.current.has(page)) return;
         spokenPagesRef.current.add(page);
         if (typeof window !== "undefined") {
@@ -168,12 +162,7 @@ export const MascotProvider = ({ children }) => {
                 JSON.stringify(Array.from(spokenPagesRef.current))
             );
         }
-        requestSpeech(text, "page");
-    };
-
-
-    const requestGuide = (text) => {
-        requestSpeech(text, "guide");
+        emitSpeech(text, "page");
     };
 
     return (
@@ -186,14 +175,14 @@ export const MascotProvider = ({ children }) => {
                 guideOpen,
                 setGuideOpen,
                 toggleGuide,
-                requestPageSpeech,
+                triggerPageGreeting,
                 registerInteraction,
                 // speech control
                 speech,
-                requestSpeech,
+                triggerSpeechIntent,
                 speak,
-                requestGuide,
                 stop,
+                clearSpeech,
 
                 // planet UI
                 activePlanet,
