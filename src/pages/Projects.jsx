@@ -33,7 +33,7 @@ const Projects = () => {
             y: rect.top,
         });
 
-        triggerSpeechIntent(
+        requestSpeech(
             project.botText || project.tagline || "This project demonstrates applied development skills.",
             "projects"
         );

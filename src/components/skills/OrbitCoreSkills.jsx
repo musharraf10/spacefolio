@@ -72,7 +72,7 @@ const CoreSkillsWave = ({ skills, onSelect }) => {
             y: rect.top,
         });
 
-        triggerSpeechIntent(
+        requestSpeech(
             skill.botText ||
             `${skill.name} is one of my core skills. ${skill.summary}`,
             "skills"

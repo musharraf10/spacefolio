@@ -39,7 +39,7 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
         currentPage,
         lastInteractionTime,
         toggleGuide,
-        triggerSpeechIntent,
+        requestSpeech,
         clearActivePlanetPos,
         clearSpeech
     } = useMascot();

@@ -34,7 +34,7 @@ const JourneyPhase = ({
         if (!isExpanded) return;
         setActivePlanet("journey");
         registerInteraction("journey");
-        triggerSpeechIntent(
+        requestSpeech(
             phase.botText ||
             `This phase represents ${phase.phase.title}. ${phase.preview.summary}`,
             "journey"

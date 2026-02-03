@@ -8,7 +8,7 @@ const SolarSystem = ({ onPlanetFocus }) => {
     const containerRef = useRef(null);
     const trackRef = useRef(null);
 
-    const { setActivePlanet, setActivePlanetPos, triggerSpeechIntent, registerInteraction } = useMascot();
+    const { setActivePlanet, setActivePlanetPos, requestSpeech, registerInteraction } = useMascot();
 
     const [isDragging, setIsDragging] = useState(false);
     const [activePlanetId, setActivePlanetId] = useState(null);
@@ -48,8 +48,8 @@ const SolarSystem = ({ onPlanetFocus }) => {
         }
 
         // 🔊 SPEAK HERE
-        if (planet.script && shouldSpeak) {
-            triggerSpeechIntent(planet.script, "planet");
+        if (planet.script) {
+            requestSpeech(planet.script, "planet");
         }
     };
 

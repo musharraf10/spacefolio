@@ -22,7 +22,7 @@ export default function ExperienceSection() {
             y: rect.top,
         });
 
-        triggerSpeechIntent(
+        requestSpeech(
             exp.botText ||
             `I worked as a ${exp.role} at ${exp.company}. ${exp.outcome}`,
             "experience"

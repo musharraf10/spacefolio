@@ -57,7 +57,8 @@ export const MascotProvider = ({ children }) => {
     });
     const [lastInteractionType, setLastInteractionType] = useState(null);
     const [lastInteractionTime, setLastInteractionTime] = useState(0);
-    const intentIdRef = useRef(0);
+    const lastSpokenTextRef = useRef(null);
+    const lastSpokenAtRef = useRef(0);
 
     function registerInteraction(type) {
         const time = Date.now();
@@ -133,12 +134,37 @@ export const MascotProvider = ({ children }) => {
 
     const emitSpeech = (text, source = "manual") => {
         if (!text) return;
-        intentIdRef.current += 1;
+        if (isSpeaking) return;
+        const now = Date.now();
+        if (lastSpokenTextRef.current === text) return;
+        if (now - lastSpokenAtRef.current < 800) return;
+        const allowDuringInteraction = new Set([
+            "action",
+            "planet",
+            "projects",
+            "experience",
+            "skills",
+            "journey",
+            "contact",
+            "navigation",
+        ]).has(source);
+        const isInteracting = Date.now() - lastInteractionTime < 1200;
+        if (!allowDuringInteraction && isInteracting) return;
+
+        lastSpokenTextRef.current = text;
+        lastSpokenAtRef.current = now;
+        // new object every time → guarantees re-trigger
         setSpeech({
-            id: intentIdRef.current,
+            id: now,
             text,
             source,
         });
+        lastSpokenTextRef.current = text;
+        lastSpokenAtRef.current = now;
+    };
+
+    const clearSpeech = () => {
+        setSpeech(null);
     };
 
     /**
