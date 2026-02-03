@@ -19,7 +19,6 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
     const shownHintsRef = useRef(new Set());
 
     const botRef = useRef(null);
-    const wrapperRef = useRef(null);
     const constraintsRef = useRef(null);
     const [mood, setMood] = useState("idle");
     const {
@@ -183,25 +182,6 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
         }
     }, [lastInteractionTime]);
 
-    useEffect(() => {
-        if (!guideOpen) return;
-
-        const handleOutsideClick = (event) => {
-            if (!wrapperRef.current) return;
-            if (!wrapperRef.current.contains(event.target)) {
-                setGuideOpen(false);
-            }
-        };
-
-        document.addEventListener("mousedown", handleOutsideClick);
-        document.addEventListener("touchstart", handleOutsideClick);
-
-        return () => {
-            document.removeEventListener("mousedown", handleOutsideClick);
-            document.removeEventListener("touchstart", handleOutsideClick);
-        };
-    }, [guideOpen, setGuideOpen]);
-
 
 
 
@@ -214,7 +194,7 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
     return (
         <div ref={constraintsRef} className="fixed inset-0 z-50 pointer-events-none">
             <motion.div
-                ref={wrapperRef}
+                ref={botRef}
                 animate={controls}
                 initial={{ left: 20, top: window.innerHeight - 140 }}
                 className="absolute z-50 pointer-events-auto"
@@ -222,10 +202,7 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
                 dragConstraints={constraintsRef}
                 dragElastic={0}
                 dragMomentum={false}
-                onClick={() => {
-                    registerInteraction("guide");
-                    toggleGuide();
-                }}
+                onClick={toggleGuide}
             >
             {/* BODY */}
             <motion.div
