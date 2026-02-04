@@ -6,7 +6,7 @@ const BackButton = ({
     className = "",
     buttonClassName = "",
     noteClassName = "",
-    noteText = "Use back button for navigation.",
+    noteText = "Use Bot for navigation.",
 }) => {
     const navigate = useNavigate();
 
