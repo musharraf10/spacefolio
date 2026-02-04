@@ -64,7 +64,11 @@ const Journey = () => {
 
             {/* Content */}
             <div className="relative z-10">
-                <BackButton className="px-4 pt-6" />
+                <BackButton
+                    isJourney={true}
+                    className="absolute top-4 left-4 z-30"
+                    noteText="Use Bot for navigation"   // or change to whatever you want
+                />
                 {/* Header */}
                 <motion.div
                     className="text-center py-12 md:py-16 lg:py-20 px-4"
