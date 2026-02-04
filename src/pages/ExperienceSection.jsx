@@ -32,7 +32,7 @@ export default function ExperienceSection() {
 
     return (
         <section className="relative py-16 md:py-24 max-w-6xl mx-auto px-4">
-            <BackButton />
+            <BackButton className="mb-8" />
             {/* Header */}
             <div style={{
                 position: 'relative',

@@ -253,7 +253,7 @@ const SpacefolioSkills = () => {
             <EnhancedStarField />
 
             <div className="relative z-10 px-4 py-16 max-w-7xl mx-auto">
-                <BackButton />
+                <BackButton className="mb-8" />
                 {/* Header */}
                 <div style={{
                     position: 'relative',

@@ -17,8 +17,8 @@ const NotFound = () => {
                     The page you're looking for drifted beyond our galaxy. Head back
                     to the solar system to continue exploring.
                 </p>
-                <div className="mt-8">
-                    <BackButton noteClassName="text-center" />
+                <div className="mt-8 flex justify-center">
+                    <BackButton className="items-center" noteClassName="text-center" />
                 </div>
             </div>
         </section>

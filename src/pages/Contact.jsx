@@ -19,7 +19,7 @@ const Contact = () => {
             </div>
 
             <div className="relative z-10 w-full max-w-4xl space-y-10">
-                <BackButton />
+                <BackButton className="mb-2" />
 
 
                 {/* Contact Actions */}

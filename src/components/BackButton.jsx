@@ -3,10 +3,10 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const BackButton = ({
-    className = "fixed top-6 left-6 z-50",
+    className = "",
     buttonClassName = "",
     noteClassName = "",
-    noteText = "Use back button for navigation.",
+    noteText = "Use Bot for navigation.",
 }) => {
     const navigate = useNavigate();
 
