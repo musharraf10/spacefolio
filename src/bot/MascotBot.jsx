@@ -38,9 +38,66 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
         currentPage,
         lastInteractionTime,
         toggleGuide,
-        registerInteraction,
-        requestSpeech
+        requestSpeech,
+        clearActivePlanetPos
     } = useMascot();
+    // Add / replace this block in MascotBot.jsx
+
+    // ────────────────────────────────────────────────
+    // SCROLL → FORCE RETURN TO TOP-RIGHT (independent & stable)
+    // ────────────────────────────────────────────────
+    const lastScrollY = useRef(window.scrollY || 0);
+    const SCROLL_THRESHOLD = 100;      // start considering after ~100px movement
+    const DEBOUNCE_AFTER_SCROLL_MS = 1200;  // wait ~1.2 seconds after last scroll
+
+    useEffect(() => {
+        let timeoutId = null;
+
+        const forceResetToTopRight = () => {
+            if (!botRef.current) return;
+
+            const rect = botRef.current.getBoundingClientRect();
+            const padding = isMobile ? 16 : 24;
+
+            controls.start({
+                left: window.innerWidth - rect.width - padding,
+                top: padding,
+                transition: {
+                    type: "spring",
+                    stiffness: 80,    // softer spring so it doesn't feel snappy/jumpy
+                    damping: 14
+                },
+            });
+
+            // Optional: also clear target so it doesn't try to go back
+            // clearActivePlanetPos?.();
+        };
+
+        const onScroll = () => {
+            const currentY = window.scrollY || 0;
+            const delta = Math.abs(currentY - lastScrollY.current);
+
+            // Update last position even on small scrolls
+            lastScrollY.current = currentY;
+
+            if (delta < SCROLL_THRESHOLD) return;
+
+            // Cancel any previous pending reset
+            if (timeoutId) clearTimeout(timeoutId);
+
+            // Schedule reset only after user stops scrolling for a while
+            timeoutId = setTimeout(() => {
+                forceResetToTopRight();
+            }, DEBOUNCE_AFTER_SCROLL_MS);
+        };
+
+        window.addEventListener("scroll", onScroll, { passive: true });
+
+        return () => {
+            window.removeEventListener("scroll", onScroll);
+            if (timeoutId) clearTimeout(timeoutId);
+        };
+    }, [controls, isMobile]);
 
     /* ---------------- POSITIONING HANDLER ---------------- */
     const positionBot = () => {
@@ -123,16 +180,17 @@ const MascotBot = ({ target, speech, voiceEnabled }) => {
                 () => setMood("speaking"),
                 () => {
                     setMood("idle");
+                    // Clear target after speech ends and return to idle position
                     setTimeout(() => {
-                        positionBot();
-                    }, 2000);
+                        clearActivePlanetPos();
+                    }, 1500);
                 },
                 voiceEnabled
             );
         }, 300);
 
         return () => clearTimeout(t);
-    }, [speech, voiceEnabled]);
+    }, [speech, voiceEnabled, clearActivePlanetPos]);
 
     /* ---------------- VOICE TOGGLE ---------------- */
     useEffect(() => {
