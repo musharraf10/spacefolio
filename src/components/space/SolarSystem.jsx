@@ -1,21 +1,22 @@
 import React, { useRef, useState, useEffect } from "react";
 import { motion, useMotionValue, useTransform, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import Planet from "../planet/Planet";
 import { planets, profileData } from "../../data/mockData";
 import { useMascot } from "../../context/MascotContext";
-import profileImage from "../../assets/a606302e-a695-4472-860a-6fdf53e0f254.png";
+import profileImage from "../../assets/NewProfileBG.png";
+
 
 const SolarSystem = ({ onPlanetFocus }) => {
     const containerRef = useRef(null);
     const trackRef = useRef(null);
     const navigate = useNavigate();
-
     const { setActivePlanet, setActivePlanetPos, requestSpeech, registerInteraction } = useMascot();
 
     const [isDragging, setIsDragging] = useState(false);
     const [activePlanetId, setActivePlanetId] = useState(null);
     const [bounds, setBounds] = useState({ left: 0, right: 0 });
-    const [showResumePrompt, setShowResumePrompt] = useState(false);
+    const [displayState, setDisplayState] = useState('text'); // 'text', 'image', or 'none'
     const [isHovering, setIsHovering] = useState(false);
 
     const dragX = useMotionValue(0);
@@ -103,20 +104,42 @@ const SolarSystem = ({ onPlanetFocus }) => {
         });
     }, []);
 
+    // Cycle through: text (6s) -> image (3s) -> gap (3s) -> repeat
     useEffect(() => {
-        const interval = setInterval(() => {
-            if (!isHovering) {
-                setShowResumePrompt((prev) => !prev);
-            } else {
+        if (isHovering) return;
 
+        let cycleTimer;
+        let currentState = 'text';
+
+        const runCycle = () => {
+            if (currentState === 'text') {
+                setDisplayState('text');
+                cycleTimer = setTimeout(() => {
+                    currentState = 'image';
+                    runCycle();
+                }, 6000);
+            } else if (currentState === 'image') {
+                setDisplayState('image');
+                cycleTimer = setTimeout(() => {
+                    currentState = 'none';
+                    runCycle();
+                }, 3000);
+            } else if (currentState === 'none') {
+                setDisplayState('none');
+                cycleTimer = setTimeout(() => {
+                    currentState = 'text';
+                    runCycle();
+                }, 3000);
             }
-        }, 6000);
+        };
 
-        return () => clearInterval(interval);
+        runCycle();
+
+        return () => clearTimeout(cycleTimer);
     }, [isHovering]);
 
     const handleSunClick = () => {
-        window.open(profileData.resumeUrl, "_blank", "noopener,noreferrer");
+        navigate("resume");
     };
 
     return (
@@ -150,6 +173,8 @@ const SolarSystem = ({ onPlanetFocus }) => {
                         <button
                             type="button"
                             onClick={handleSunClick}
+                            onTouchStart={() => setIsHovering(true)}
+                            onTouchEnd={() => setIsHovering(false)}
                             className="relative w-48 h-48 md:w-64 md:h-64 mb-6 focus:outline-none group"
                             aria-label="View profile and resume"
                         >
@@ -217,9 +242,9 @@ const SolarSystem = ({ onPlanetFocus }) => {
                                 />
                             </div>
 
-                            {/* Inner profile circle - appears on hover or prompt */}
+                            {/* Inner profile circle - appears on hover or during cycle */}
                             <AnimatePresence mode="wait">
-                                {(isHovering || showResumePrompt) && (
+                                {(isHovering || displayState !== 'none') && (
                                     <motion.div
                                         initial={{ rotateY: 0, opacity: 0 }}
                                         animate={{ rotateY: 0, opacity: 1 }}
@@ -228,7 +253,7 @@ const SolarSystem = ({ onPlanetFocus }) => {
                                         className="absolute inset-0 rounded-full overflow-hidden"
                                     >
                                         <AnimatePresence mode="wait">
-                                            {showResumePrompt && !isHovering ? (
+                                            {(displayState === 'text' && !isHovering) ? (
                                                 // Show text prompt
                                                 <motion.div
                                                     key="text"
@@ -286,6 +311,7 @@ const SolarSystem = ({ onPlanetFocus }) => {
                                 className="absolute inset-0 rounded-full border-2 border-yellow-300/0 group-hover:border-yellow-300/60 transition-all duration-300"
                                 whileHover={{ scale: 1.05 }}
                             />
+
 
                         </button>
 

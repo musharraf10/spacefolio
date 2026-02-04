@@ -1,47 +1,135 @@
 import { motion } from "framer-motion";
 import { profileData } from "../data/mockData";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Download, ExternalLink } from "lucide-react";
 
 const Resume = () => {
+    const navigate = useNavigate();
+
     return (
-        <section className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white px-4 py-16">
-            <div className="max-w-5xl mx-auto text-center">
-                <motion.h1
-                    initial={{ opacity: 0, y: -40 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8 }}
-                    className="text-hero-gradient text-4xl md:text-6xl font-bold"
+        <section className="relative min-h-screen overflow-hidden bg-space-dark text-white px-4 py-20">
+            {[...Array(50)].map((_, i) => (
+                <motion.div
+                    key={i}
+                    className="absolute bg-white rounded-full opacity-40"
+                    style={{
+                        width: `${0.8 + Math.random() * 1.8}px`,
+                        height: `${0.8 + Math.random() * 1.8}px`,
+                        top: `${Math.random() * 100}%`,
+                        left: `${Math.random() * 100}%`,
+                    }}
+                    animate={{ opacity: [0.3, 0.9, 0.3] }}
+                    transition={{
+                        duration: 4 + Math.random() * 4,
+                        repeat: Infinity,
+                        delay: Math.random() * 6,
+                    }}
+                />
+            ))}
+            {/* Cosmic Background Glow */}
+            <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute top-1/2 left-1/2 w-[700px] h-[700px] 
+                -translate-x-1/2 -translate-y-1/2 
+                bg-cyan-500/10 blur-[140px] rounded-full" />
+            </div>
+
+            <div className="relative z-10 max-w-5xl mx-auto">
+
+                {/* Back Button - Now in document flow on mobile, absolute on desktop */}
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => navigate("/")}
+                    className="mb-6 md:mb-0 md:absolute md:left-0 md:top-0
+                    flex items-center gap-2 px-4 py-2
+                    bg-space-blue/60 border border-cyan-400/40
+                    rounded-full text-cyan-300 text-sm
+                    hover:bg-space-blue/80 transition"
                 >
-                    Resume
-                </motion.h1>
-                <p className="mt-4 text-slate-300 max-w-2xl mx-auto">
-                    View or download my resume using the button below. If you update
-                    <span className="text-accent"> profileData.resumeUrl</span>, this page
-                    will always point to the latest version.
-                </p>
+                    <ArrowLeft size={16} />
+                    Home
+                </motion.button>
 
-                <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-                    <a
-                        href={profileData.resumeUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="px-6 py-3 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold shadow-lg hover:opacity-90 transition"
+                {/* Content wrapper - centered text */}
+                <div className="text-center">
+                    {/* Title */}
+                    <motion.h1
+                        initial={{ opacity: 0, y: -40 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8 }}
+                        className="text-4xl md:text-6xl font-bold mb-4 cosmic-text-gradient"
                     >
-                        Open Resume
-                    </a>
-                    <a
-                        href={profileData.resumeUrl}
-                        className="px-6 py-3 rounded-full border border-cyan-400/60 text-cyan-100 hover:bg-cyan-500/10 transition"
+                        Mission Resume
+                    </motion.h1>
+
+                    <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.3 }}
+                        className="text-accent/80 max-w-2xl mx-auto mb-10"
                     >
-                        Download Resume
-                    </a>
+                        Access my professional profile and experience archive.
+                        Download or view the latest version anytime.
+                    </motion.p>
+
+                    {/* Action Buttons */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 }}
+                        className="flex flex-col sm:flex-row gap-5 justify-center"
+                    >
+
+                        {/* Open */}
+                        <a
+                            href={profileData.resumeViewUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="group flex items-center justify-center gap-2
+                            px-7 py-3 rounded-full
+                            bg-gradient-to-r from-cyan-500 to-blue-600
+                            font-semibold shadow-lg shadow-cyan-500/30
+                            hover:opacity-90 transition"
+                        >
+                            <ExternalLink size={18} />
+                            Open Resume
+                        </a>
+
+                        {/* Download */}
+                        <a
+                            href={profileData.resumeUrl}
+                            download
+                            className="group flex items-center justify-center gap-2
+                            px-7 py-3 rounded-full
+                            border border-cyan-400/50
+                            text-cyan-200
+                            hover:bg-cyan-500/10 transition"
+                        >
+                            <Download size={18} />
+                            Download
+                        </a>
+                    </motion.div>
+
+                    {/* Info Panel */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.8 }}
+                        className="mt-14 mx-auto max-w-2xl
+                        rounded-xl border border-cyan-400/20
+                        bg-space-blue/40 backdrop-blur-md
+                        p-5"
+                    >
+                        <p className="text-sm text-accent/70 leading-relaxed">
+                            ✨ Thank you for taking the time to view my resume.
+                            I truly appreciate your interest in my work and journey.
+                            If you'd like to know more, feel free to explore my projects
+                            or reach out through the contact section.
+                        </p>
+
+                    </motion.div>
                 </div>
 
-                <div className="mt-10 rounded-2xl border border-slate-700/60 bg-slate-900/50 p-4 backdrop-blur-sm">
-                    <p className="text-sm text-slate-400">
-                        Tip: If your resume is hosted on Google Drive or another external
-                        provider, make sure the link is publicly accessible.
-                    </p>
-                </div>
             </div>
         </section>
     );
